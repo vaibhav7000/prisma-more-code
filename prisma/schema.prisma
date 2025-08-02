@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output = "../generated/prisma"
+  // Provides a prisma client that will be used to interact with the database
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+  // configuration for the database type and connection string
+}
+
+
+// Prisma provides initutive way to define the tables in the form of models 
+
+// User will be the name of the table / collection
+model User {
+  id Int @id @default(autoincrement())
+  name String
+  email String @unique
+  posts Post[] // this kind of defines that this table has many relation with the Post table
+}
+
+model Post {
+  id Int @id @default(autoincrement())
+  title String
+  content String?
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Citizen {
+  id Int @id @default(autoincrement())
+  firstname String
+  lastname String
+  username String @unique
+  email String @unique
+  owner Owner?
+}
+
+model Owner {
+  id Int @id @default(autoincrement())
+  citizenId Int @unique
+  citizen Citizen @relation(fields: [citizenId], references: [id])
+  property Property? // this is the "first step of creating the relationship", ? means one or none value by default
+}
+
+model Property {
+  id Int @id @default(autoincrement())
+  city String
+  state String
+  pincode Int
+  area Int
+  ownerId Int @unique // this specifies only one owner can have one property
+  owner Owner @relation(fields: [ownerId], references: [id])
+}
+
+/*
+
+  There are 3 kinds of relationship in Database
+  1. One to One relationship
+  2. One to Many relationship
+  3. Many to Many relationship
+
+  Prisma provides two things so that developer can interact with the database directly
+  1. Easy models defining that will be done inside the schema.prisma file (npx prisma migrate dev --name CurrentMigrationName)
+
+  2. Provides Auto Generated Clients ( prisma client ) that client has access to the database. Using this client we can perform CRUD operations. The client has access to the tables with the type safety and returns the result in JS object manner ( npx prisma generate )
+
+*/
